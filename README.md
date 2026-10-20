@@ -5,14 +5,20 @@ Autor: Sebastian Losinno
 
 El proyecto estima la probabilidad de victoria de cada partido con modelos de aprendizaje automático, la traduce a puntos ATP esperados con una simulación de Monte Carlo de los cuadros y recomienda el calendario de torneos que maximiza esos puntos para los jugadores argentinos de ranking 100–300.
 
+**Prototipo interactivo:** [sebadenos.github.io/proyecto-final-tenis](https://sebadenos.github.io/proyecto-final-tenis/)
+
 ## Notebooks
 
 | Notebook | Contenido | Abrir |
 |---|---|---|
-| `01_EDA_y_preparacion.ipynb` | Ingesta, calidad del dato, EDA, Elo, baselines, decisión Go/No-Go, objetivos de desempeño y tablas de torneos, puntos, países y calendario 2026 | [Abrir en Colab](https://colab.research.google.com/github/sebadenos/proyecto-final-tenis/blob/main/notebooks/01_EDA_y_preparacion.ipynb) |
-| `02_Modelado_y_simulacion.ipynb` | Atributos, modelos, evaluación, simulación de Monte Carlo y optimización del calendario | [Abrir en Colab](https://colab.research.google.com/github/sebadenos/proyecto-final-tenis/blob/main/notebooks/02_Modelado_y_simulacion.ipynb) |
+| `01_EDA_y_preparacion.ipynb` | Ingesta, calidad del dato, EDA, Elo, baselines, viabilidad del proyecto, objetivos de desempeño y tablas de torneos, puntos, países y calendario 2026 | [Abrir en Colab](https://colab.research.google.com/github/sebadenos/proyecto-final-tenis/blob/main/notebooks/01_EDA_y_preparacion.ipynb) |
+| `02_Modelado_y_simulacion.ipynb` | Atributos, modelos, evaluación, simulación de Monte Carlo, optimización del calendario y datos del prototipo | [Abrir en Colab](https://colab.research.google.com/github/sebadenos/proyecto-final-tenis/blob/main/notebooks/02_Modelado_y_simulacion.ipynb) |
 
 Las dos notebooks corren de principio a fin en Google Colab y descargan sus insumos de este repositorio. Para ejecutarlas sobre una copia local, clonar el repositorio y asignar a `URL_REPO` la ruta de la carpeta.
+
+## Prototipo
+
+La carpeta `docs/` contiene la página del prototipo, publicada con GitHub Pages. Corre en el navegador el mismo optimizador que la notebook 02: se elige el jugador, el período, la cantidad de torneos, la penalización por viaje, el máximo de semanas seguidas y las superficies, y la página muestra el calendario recomendado con los puntos esperados de cada torneo. Los datos (`docs/datos.js`) los genera la notebook 02 (sección 6.8).
 
 ## Datos
 
@@ -23,4 +29,4 @@ Las dos notebooks corren de principio a fin en Google Colab y descargan sus insu
 | `data/externos/tablas_torneos_puntos.xlsx` | Tablas de torneos (país y categoría), puntos por ronda y países (código IOC y región) | Elaboración propia a partir de la base, atptour.com y el Reglamento ATP 2026 |
 | `data/procesados/` | Salidas de la notebook 01 que usa la notebook 02 | Generado por `01_EDA_y_preparacion.ipynb` |
 
-La fuente de partidos se actualiza a diario y corrige datos históricos, por eso el análisis usa una copia fija con fecha de corte.
+La fuente de partidos se actualiza a diario y corrige datos históricos, por eso el análisis usa una copia fija con fecha de corte. Los datos de la ATP se usan con fines exclusivamente académicos.
