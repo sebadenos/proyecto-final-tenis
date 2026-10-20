@@ -1,0 +1,60 @@
+﻿variable,origen,tipo,descripción,dominio / unidad,% faltantes,rol,tratamiento
+tourney_id,Original,texto,Identificador del torneo (base ATP),Código,0.0,Identificador,—
+tourney_name,Original,texto,Ciudad o nombre del torneo,Texto libre,0.0,Contexto,Se vincula por id_atp con la tabla de torneos (sección 13)
+surface,Original,categórica,Superficie de juego,"Hard, Clay, Grass, Carpet",0.0,Atributo pre-partido,Normalizada; Carpet se agrupa con Hard para el Elo
+draw_size,Original,entera,Tamaño del cuadro,4 a 128,0.0,Atributo pre-partido,—
+tourney_level,Original,categórica,Nivel del torneo,"G, M, A, F, D, C...",0.0,Atributo pre-partido,Copa Davis (D) excluida
+indoor,Original,categórica,Torneo bajo techo o al aire libre,"Indoor, Outdoor",0.48575653031049776,Atributo pre-partido,Normalizada; para la simulación se toma del calendario ATP 2026 (sección 13)
+tourney_date,Original,fecha,Semana de inicio del torneo,2000–2026,0.0,Atributo pre-partido,Convertida a fecha
+match_num,Original,entera,Número de partido dentro del torneo,≥ 1,0.0021775169138402257,Identificador,—
+winner_id / loser_id,Original,texto,ID ATP del jugador,Código ATP,0.0,Identificador,—
+winner_name / loser_name,Original,texto,Nombre del jugador,Texto,0.0,Identificador,—
+winner_seed / loser_seed,Original,entera,Cabeza de serie,1 a 32 o vacío,0.691704377436265,Atributo pre-partido,Faltante estructural → indicador es_cabeza_serie
+winner_entry / loser_entry,Original,categórica,Forma de ingreso al cuadro,"Q, WC, LL, PR, SE, ALT o vacío",0.9420112908284421,Atributo pre-partido,"Vacío → ""Directa""; subregistrado en algunos circuitos"
+winner_hand / loser_hand,Original,categórica,Mano hábil,"R, L",0.018829248622250102,Atributo pre-partido,"""U"" → faltante; propagación intra-jugador"
+winner_ht / loser_ht,Original,numérica,Altura,cm (155–215),0.049675164657914786,Atributo pre-partido,Valores imposibles → faltante; propagación intra-jugador
+winner_ioc / loser_ioc,Original,categórica,País del jugador (código IOC),"ARG, ESP, ...",0.000629508490523769,Segmentación / filtro,—
+winner_age / loser_age,Original,numérica,Edad al momento del torneo,años (14–45),0.0007258389712800753,Atributo pre-partido,Recalculada desde fecha de nacimiento estimada
+winner_rank / loser_rank,Original,entera,Ranking ATP al momento del torneo,≥ 1,0.007825171378645997,Atributo pre-partido,MNAR → centinela 3000 + indicador
+winner_rank_points / loser_rank_points,Original,entera,Puntos de ranking ATP,≥ 0,0.007813970159953403,Atributo pre-partido,Faltante → 0; transformación log
+score,Original,texto,Resultado set por set,Texto,0.0,Post-partido (riesgo de fuga),Base de resultado_tipo
+best_of,Original,entera,Formato del partido,3 o 5 sets,0.0,Atributo pre-partido,—
+round,Original,categórica,Ronda,"Q1–Q3, R128…F, RR",0.0,Atributo pre-partido,Base de orden_ronda
+minutes,Original,numérica,Duración del partido,minutos (25–720),0.21279179174694207,Post-partido (riesgo de fuga),Fuera de rango → faltante
+w_ace / l_ace,Original,entera,Aces,conteo ≥ 0,0.19986110488821185,Post-partido (riesgo de fuga),Inconsistencias → bloque anulado; no se imputa
+w_df / l_df,Original,entera,Dobles faltas,conteo ≥ 0,0.19986110488821185,Post-partido (riesgo de fuga),Inconsistencias → bloque anulado; no se imputa
+w_svpt / l_svpt,Original,entera,Puntos jugados con el saque,conteo ≥ 0,0.19986558537568888,Post-partido (riesgo de fuga),Inconsistencias → bloque anulado; no se imputa
+w_1stIn / l_1stIn,Original,entera,Primeros saques adentro,conteo ≥ 0,0.19986558537568888,Post-partido (riesgo de fuga),Inconsistencias → bloque anulado; no se imputa
+w_1stWon / l_1stWon,Original,entera,Puntos ganados con el primer saque,conteo ≥ 0,0.19986558537568888,Post-partido (riesgo de fuga),Inconsistencias → bloque anulado; no se imputa
+w_2ndWon / l_2ndWon,Original,entera,Puntos ganados con el segundo saque,conteo ≥ 0,0.19986558537568888,Post-partido (riesgo de fuga),Inconsistencias → bloque anulado; no se imputa
+w_SvGms / l_SvGms,Original,entera,Games de saque jugados,conteo ≥ 0,0.1998700658631659,Post-partido (riesgo de fuga),Inconsistencias → bloque anulado; no se imputa
+w_bpSaved / l_bpSaved,Original,entera,Break points salvados,conteo ≥ 0,0.1998700658631659,Post-partido (riesgo de fuga),Inconsistencias → bloque anulado; no se imputa
+w_bpFaced / l_bpFaced,Original,entera,Break points enfrentados,conteo ≥ 0,0.1998700658631659,Post-partido (riesgo de fuga),Inconsistencias → bloque anulado; no se imputa
+fuente,Derivada,categórica,Archivo de origen,"ATP, Challenger, Qualy ATP",0.0,Segmentación / filtro,—
+anio,Derivada,entera,Temporada,2000–2026,0.0,Segmentación / filtro,Define burn-in y partición temporal
+circuito,Derivada,categórica,Circuito del partido,"ATP cuadro principal, Challenger, Qualy ATP",0.0,Atributo pre-partido,—
+categoria,Derivada,categórica,Categoría legible del torneo,"Grand Slam, Masters 1000, ...",0.0,Atributo pre-partido,—
+es_qualy,Derivada,booleana,Partido de clasificación,True/False,0.0,Atributo pre-partido,—
+resultado_tipo,Derivada,categórica,Tipo de resultado,"Completo, Retiro, Walkover, ...",0.0,Post-partido (riesgo de fuga),Walkovers excluidos
+surface_elo,Derivada,categórica,Superficie agrupada para el Elo,"Hard, Clay, Grass",0.0,Atributo pre-partido,—
+orden_ronda,Derivada,entera,Orden cronológico de la ronda,1–18,0.0,Identificador,—
+match_uid,Derivada,entera,Identificador único de partido,≥ 0,0.0,Identificador,—
+elo,Derivada,numérica,Elo general previo al partido,≈ 1200–2400,0.0,Atributo pre-partido,Calentamiento 2000–2006
+elo_sup,Derivada,numérica,"Elo en la superficie del partido, previo al partido",≈ 1200–2400,0.0,Atributo pre-partido,Calentamiento 2000–2006
+n_previos,Derivada,entera,Partidos previos del jugador en la base,≥ 0,0.0,Atributo pre-partido,—
+n_previos_sup,Derivada,entera,Partidos previos en la superficie,≥ 0,0.0,Atributo pre-partido,—
+gano,Derivada,binaria,El jugador ganó el partido,0 / 1,0.0,Variable objetivo,—
+p_elo / p_elo_mix,Derivada,numérica,Probabilidad de victoria según Elo general / combinado,0–1,0.0,Atributo pre-partido,—
+sobre_rend,Derivada,numérica,Victoria observada menos probabilidad Elo,−1 a 1,0.0,Post-partido (riesgo de fuga),Solo análisis
+rank_imp / sin_ranking,Derivada,numérica / booleana,Ranking imputado e indicador de ausencia,≥ 1,0.0,Atributo pre-partido,—
+log_rank / log_puntos,Derivada,numérica,Transformaciones logarítmicas de ranking y puntos,reales,0.0,Atributo pre-partido,—
+en_poblacion,Derivada,booleana,Jugador con ranking 100–300,True/False,0.0,Segmentación / filtro,—
+es_arg,Derivada,booleana,Jugador argentino,True/False,0.0,Segmentación / filtro,—
+es_cabeza_serie,Derivada,booleana,Jugador cabeza de serie,True/False,0.0,Atributo pre-partido,—
+dias_descanso,Derivada,numérica,Días desde el torneo anterior del jugador,días ≥ 0,0.017122182893498813,Atributo pre-partido,Faltante en el primer torneo del jugador
+carga_30d,Derivada,entera,Partidos jugados en los 30 días previos al torneo,≥ 0,0.0,Atributo pre-partido,—
+sv_ace_rate … ret_pts_won,Derivada,numérica,Tasas de saque y devolución del partido,0–1,0.19990815000672074,Post-partido (riesgo de fuga),Base de promedios históricos (notebook 02)
+pais_torneo,Externa,categórica,País del torneo (código IOC),"ARG, ESP, ...",,Atributo pre-partido,Tabla de torneos y calendario ATP 2026 (sección 13)
+region_torneo / region_jugador,Externa,categórica,Región del torneo y del jugador,6 regiones,,Atributo pre-partido,Tabla de países (sección 13)
+es_local,Externa,booleana,El jugador juega en su país,True/False,,Atributo pre-partido,Sección 13.8
+categoria_puntos,Externa,categórica,Clave de la tabla de puntos (categoría + tamaño de cuadro),"GS, M1000_96, …, CH50",,Función de pago,Categoría oficial 2026 si el torneo está en el calendario (sección 13.6)
