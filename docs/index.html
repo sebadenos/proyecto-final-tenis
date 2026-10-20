@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calendario óptimo ATP</title>
+<meta name="description" content="Prototipo del proyecto final: calendario de torneos que maximiza los puntos ATP esperados de los tenistas argentinos de ranking 100–300.">
+<style>
+  :root {
+    --tinta: #1b2a33; --tinta-2: #4a5a64; --tinta-3: #7b8a93; --linea: #dde4e8; --fondo: #f5f7f8; --panel: #ffffff;
+    --marca: #1f5f7a; --marca-2: #a9c9d6; --marca-suave: #e8f0f4; --foco: #d9822b;
+    --r-sud: #d9822b; --r-eur: #1f5f7a; --r-nor: #5fa8a0; --r-asi: #c9a227; --r-oce: #8c7aa9; --r-afr: #c0603a; --r-sin: #b8c2c8;
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--fondo); color: var(--tinta);
+         font: 15px/1.5 "Aptos", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif; }
+  header { background: var(--marca); color: #fff; padding: 22px 24px 20px; }
+  header .contenedor { max-width: 1180px; margin: 0 auto; }
+  header h1 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: .2px; }
+  header p { margin: 4px 0 0; color: #d6e6ee; font-size: 14px; }
+  main { max-width: 1180px; margin: 0 auto; padding: 20px 16px 40px; display: grid; grid-template-columns: 300px 1fr; gap: 20px; }
+  @media (max-width: 860px) { main { grid-template-columns: 1fr; } }
+  .panel { background: var(--panel); border: 1px solid var(--linea); border-radius: 10px; padding: 18px; }
+  aside .panel { position: sticky; top: 16px; }
+  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .6px; color: var(--tinta-3); margin: 0 0 12px; font-weight: 600; }
+  label.campo { display: block; font-size: 13px; color: var(--tinta-2); margin: 14px 0 6px; font-weight: 600; }
+  select, input[type=number] { width: 100%; padding: 8px 10px; border: 1px solid var(--linea); border-radius: 7px; font: inherit;
+                               background: #fff; color: var(--tinta); }
+  .valor { float: right; color: var(--marca); font-variant-numeric: tabular-nums; }
+  input[type=range] { width: 100%; accent-color: var(--marca); }
+  .segmentado { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--linea); border-radius: 8px; overflow: hidden; }
+  .segmentado button { border: 0; background: #fff; padding: 8px 6px; font: inherit; font-size: 13px; color: var(--tinta-2); cursor: pointer; }
+  .segmentado button + button { border-left: 1px solid var(--linea); }
+  .segmentado button[aria-pressed=true] { background: var(--marca); color: #fff; }
+  .checks label { display: flex; align-items: center; gap: 8px; font-size: 14px; margin: 4px 0; color: var(--tinta); }
+  .checks input { accent-color: var(--marca); width: 16px; height: 16px; }
+  .ayuda { font-size: 12.5px; color: var(--tinta-3); margin: 6px 0 0; }
+  .ficha { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px 12px; margin-top: 4px; }
+  .ficha div { font-size: 12px; color: var(--tinta-3); }
+  .ficha b { display: block; font-size: 16px; color: var(--tinta); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px; }
+  @media (max-width: 620px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
+  .kpi { background: var(--panel); border: 1px solid var(--linea); border-radius: 10px; padding: 14px 16px; }
+  .kpi span { font-size: 12.5px; color: var(--tinta-3); }
+  .kpi b { display: block; font-size: 26px; font-weight: 600; color: var(--tinta); font-variant-numeric: tabular-nums; line-height: 1.25; }
+  .kpi small { font-size: 12.5px; color: var(--tinta-2); }
+  .kpi.destacado b { color: var(--marca); }
+  .positivo { color: #2f7d4f !important; } .negativo { color: #b0452f !important; }
+  section.panel { margin-bottom: 18px; }
+  .tira { display: grid; gap: 2px; margin: 6px 0 2px; }
+  .tira .celda { height: 26px; border-radius: 3px; background: #edf1f3; position: relative; }
+  .tira .celda.ocupada { cursor: default; }
+  .tira-etiquetas { display: grid; gap: 2px; font-size: 11px; color: var(--tinta-3); }
+  .fila-tira { display: grid; grid-template-columns: 110px 1fr; align-items: center; gap: 10px; margin: 6px 0; }
+  .fila-tira > span { font-size: 12.5px; color: var(--tinta-2); text-align: right; }
+  .leyenda { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; color: var(--tinta-2); margin-top: 10px; }
+  .leyenda i { display: inline-block; width: 11px; height: 11px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: .4px; color: var(--tinta-3); font-weight: 600;
+       border-bottom: 1px solid var(--linea); padding: 8px 8px; }
+  td { padding: 9px 8px; border-bottom: 1px solid #eef2f4; vertical-align: top; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  td .sub { display: block; font-size: 12.5px; color: var(--tinta-3); }
+  .etiqueta { display: inline-block; padding: 1px 8px; border-radius: 20px; font-size: 12px; background: var(--marca-suave); color: var(--marca); white-space: nowrap; }
+  .etiqueta.qualy { background: #fbeee2; color: #9a5512; }
+  .punto { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: 0; }
+  .tabla-scroll { overflow-x: auto; }
+  .vacio { color: var(--tinta-3); padding: 18px 0; text-align: center; }
+  footer { max-width: 1180px; margin: 0 auto; padding: 0 16px 36px; font-size: 13px; color: var(--tinta-2); }
+  footer p { margin: 6px 0; }
+  a { color: var(--marca); }
+</style>
+</head>
+<body>
+<header>
+  <div class="contenedor">
+    <h1>Calendario óptimo de torneos para tenistas argentinos de ranking 100–300</h1>
+    <p>Prototipo del proyecto final · Licenciatura en Ciencia de Datos, Universidad CAECE · Sebastian Losinno · Datos al <span id="fecha-corte"></span></p>
+  </div>
+</header>
+
+<main>
+  <aside>
+    <div class="panel">
+      <h2>Parámetros</h2>
+      <label class="campo" for="jugador">Jugador</label>
+      <select id="jugador"></select>
+      <div class="ficha" id="ficha"></div>
+
+      <label class="campo">Período</label>
+      <div class="segmentado" role="group" aria-label="Período">
+        <button type="button" data-periodo="resto" aria-pressed="true">Resto de 2026</button>
+        <button type="button" data-periodo="retro" aria-pressed="false">Ene–oct 2026</button>
+      </div>
+      <p class="ayuda" id="ayuda-periodo"></p>
+
+      <label class="campo" for="max-torneos">Cantidad máxima de torneos <span class="valor" id="v-max-torneos"></span></label>
+      <input type="range" id="max-torneos" min="1" max="30" step="1">
+
+      <label class="campo" for="lambda">Penalización por cambio de región <span class="valor" id="v-lambda"></span></label>
+      <input type="range" id="lambda" min="0" max="50" step="1">
+      <p class="ayuda">Puntos que se descuentan por cada viaje a otra región (costo y desgaste de un vuelo largo).</p>
+
+      <label class="campo" for="max-seguidas">Máximo de semanas seguidas <span class="valor" id="v-max-seguidas"></span></label>
+      <input type="range" id="max-seguidas" min="1" max="8" step="1">
+
+      <label class="campo">Superficies</label>
+      <div class="checks" id="superficies"></div>
+
+      <label class="campo">Ingreso</label>
+      <div class="checks"><label><input type="checkbox" id="permitir-qualy" checked> Permitir qualy de torneos ATP</label></div>
+    </div>
+  </aside>
+
+  <div>
+    <div class="kpis" id="kpis"></div>
+
+    <section class="panel">
+      <h2>Semanas del calendario</h2>
+      <div id="tiras"></div>
+      <div class="leyenda" id="leyenda"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Calendario recomendado</h2>
+      <div class="tabla-scroll"><table id="tabla"></table></div>
+    </section>
+
+    <section class="panel" id="panel-real" hidden>
+      <h2>Calendario que jugó en 2026 (valorado con la misma simulación)</h2>
+      <div class="tabla-scroll"><table id="tabla-real"></table></div>
+    </section>
+  </div>
+</main>
+
+<footer>
+  <p><b>Cómo funciona.</b> Para cada torneo del calendario 2026, un modelo de probabilidad de victoria (LightGBM calibrado) y una simulación de Monte Carlo del cuadro estiman los puntos ATP que el jugador puede esperar, con su nivel al corte de datos. El optimizador (programación dinámica semana a semana) elige la combinación de torneos que maximiza esos puntos, con un máximo de semanas seguidas y una penalización por cada cambio de región. Un torneo es elegible si el ranking del jugador alcanza el corte de ingreso estimado.</p>
+  <p><b>Cautelas.</b> En el período enero–octubre, los torneos se valoran con sus cuadros reales de 2026, que al planificar todavía no se conocen: esa comparación es una cota optimista de la ganancia. Los torneos que faltan jugarse se valoran con su edición anterior, por lo que conviene revisar la recomendación a medida que se publican las listas de aceptación. El nivel del jugador se supone constante durante la temporada.</p>
+  <p>Código, datos y notebooks: <a href="https://github.com/sebadenos/proyecto-final-tenis">github.com/sebadenos/proyecto-final-tenis</a></p>
+</footer>
+
+<script src="datos.js"></script>
+<script>
+(function () {
+  const D = window.DATOS;
+  const REG_COLOR = ['var(--r-sud)', 'var(--r-nor)', 'var(--r-eur)', 'var(--r-asi)', 'var(--r-oce)', 'var(--r-afr)', 'var(--r-sin)'];
+  const SIN_REGION = D.regiones.length - 1;
+  const CATEGORIAS = { GS: 'Grand Slam', M1000_96: 'Masters 1000', M1000_56: 'Masters 1000', ATP500_32: 'ATP 500',
+    ATP500_48: 'ATP 500', ATP250_32: 'ATP 250', ATP250_48: 'ATP 250', CH175: 'Challenger 175', CH125: 'Challenger 125',
+    CH100: 'Challenger 100', CH75: 'Challenger 75', CH50: 'Challenger 50' };
+  const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+  const fmt1 = (x) => x.toLocaleString('es-AR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  const fmt0 = (x) => Math.round(x).toLocaleString('es-AR');
+  const fecha = (iso) => { const [a, m, d] = iso.split('-').map(Number); return `${d} ${MESES[m - 1]}`; };
+  const $ = (id) => document.getElementById(id);
+
+  const estado = { jugador: 0, periodo: 'resto', maxTorneos: 6, lambda: D.lambda_viaje, maxSeguidas: D.max_seguidas,
+                   superficies: new Set(['Polvo de ladrillo', 'Cemento', 'Césped']), qualy: true };
+
+  // ---------------------------------------------------------------- optimizador (misma formulación que la notebook 02)
+  function optimizar(opciones, maxTorneos, lambda, wIni, wFin, rIni, cIni, maxSeg) {
+    const R = D.regiones.length, C = maxSeg + 1, N = maxTorneos + 1;
+    const tam = R * C * N, idx = (r, c, n) => (r * C + c) * N + n;
+    const V = new Map(), decision = new Map();
+    for (let w = wFin; w <= wFin; w++) V.set(w, new Float64Array(tam));
+    const porSemana = new Map();
+    opciones.forEach((o, i) => { if (o.w >= wIni && o.w < wFin) { if (!porSemana.has(o.w)) porSemana.set(o.w, []); porSemana.get(o.w).push(i); } });
+    for (let w = wFin - 1; w >= wIni; w--) {
+      const sig = V.get(w + 1);
+      const mejor = new Float64Array(tam), eleccion = new Int32Array(tam).fill(-1);
+      for (let r = 0; r < R; r++) for (let c = 0; c < C; c++) for (let n = 0; n < N; n++) mejor[idx(r, c, n)] = sig[idx(r, 0, n)];
+      for (const i of (porSemana.get(w) || [])) {
+        const o = opciones[i], d = o.semanas, fin = Math.min(w + d, wFin), futuro = V.get(fin);
+        for (let c = 0; c < C; c++) {
+          if (c + d > maxSeg) continue;
+          const c2 = Math.min(c + d, maxSeg);
+          for (let r = 0; r < R; r++) {
+            const viaje = (r !== o.r && r !== SIN_REGION) ? lambda : 0;
+            for (let n = 0; n < N - 1; n++) {
+              const valor = o.pts - viaje + futuro[idx(o.r, c2, n + 1)];
+              const k = idx(r, c, n);
+              if (valor > mejor[k]) { mejor[k] = valor; eleccion[k] = i; }
+            }
+          }
+        }
+      }
+      V.set(w, mejor); decision.set(w, eleccion);
+    }
+    const elegidos = [];
+    let w = wIni, r = rIni, c = Math.min(cIni, maxSeg), n = 0;
+    while (w < wFin) {
+      const e = decision.get(w)[idx(r, c, n)];
+      if (e < 0) { w += 1; c = 0; continue; }
+      const o = opciones[e];
+      elegidos.push(o);
+      w += o.semanas; r = o.r; c = Math.min(c + o.semanas, maxSeg); n += 1;
+    }
+    return elegidos;
+  }
+
+  // ---------------------------------------------------------------- datos del jugador
+  function opcionesDe(j) {
+    return j.opciones.map(([w, id, q, sem, pts]) => ({ w, id, qualy: !!q, semanas: sem, pts, t: D.torneos[id], r: D.torneos[id].region }))
+      .filter((o) => estado.superficies.has(o.t.superficie) && (estado.qualy || !o.qualy));
+  }
+  function cambiosRegion(cal) { let k = 0; for (let i = 1; i < cal.length; i++) if (cal[i].r !== cal[i - 1].r) k++; return k; }
+
+  // ---------------------------------------------------------------- interfaz
+  function iniciar() {
+    $('fecha-corte').textContent = D.fecha_corte.split('-').reverse().join('/');
+    const sel = $('jugador');
+    D.jugadores.forEach((j, i) => { const op = document.createElement('option'); op.value = i; op.textContent = `${j.nombre} (${j.ranking})`; sel.appendChild(op); });
+    sel.addEventListener('change', () => { estado.jugador = +sel.value; ajustarMaxTorneos(true); render(); });
+    document.querySelectorAll('[data-periodo]').forEach((b) => b.addEventListener('click', () => {
+      estado.periodo = b.dataset.periodo;
+      document.querySelectorAll('[data-periodo]').forEach((x) => x.setAttribute('aria-pressed', x === b));
+      ajustarMaxTorneos(true); render();
+    }));
+    const deslizador = (id, clave) => { const el = $(id); el.value = estado[clave]; el.addEventListener('input', () => { estado[clave] = +el.value; render(); }); };
+    deslizador('max-torneos', 'maxTorneos'); deslizador('lambda', 'lambda'); deslizador('max-seguidas', 'maxSeguidas');
+    const sup = $('superficies');
+    ['Polvo de ladrillo', 'Cemento', 'Césped'].forEach((s) => {
+      const l = document.createElement('label');
+      l.innerHTML = `<input type="checkbox" checked> ${s}`;
+      l.querySelector('input').addEventListener('change', (ev) => { ev.target.checked ? estado.superficies.add(s) : estado.superficies.delete(s); render(); });
+      sup.appendChild(l);
+    });
+    $('permitir-qualy').addEventListener('change', (ev) => { estado.qualy = ev.target.checked; render(); });
+    $('leyenda').innerHTML = D.regiones.slice(0, -1).map((r, i) => `<span><i style="background:${REG_COLOR[i]}"></i>${r}</span>`).join('');
+    ajustarMaxTorneos(true); render();
+  }
+
+  function ajustarMaxTorneos(reiniciar) {
+    const j = D.jugadores[estado.jugador];
+    const el = $('max-torneos');
+    if (estado.periodo === 'retro') { el.max = 35; if (reiniciar) estado.maxTorneos = j.real.length; }
+    else { el.max = 9; if (reiniciar) estado.maxTorneos = 6; }
+    el.value = estado.maxTorneos;
+  }
+
+  function render() {
+    const j = D.jugadores[estado.jugador];
+    const retro = estado.periodo === 'retro';
+    const wIni = retro ? 0 : D.w_corte, wFin = retro ? D.w_corte : D.semanas.length;
+    const rIni = retro ? SIN_REGION : j.region_ini, cIni = retro ? 0 : j.seguidas_ini;
+    $('v-max-torneos').textContent = estado.maxTorneos;
+    $('v-lambda').textContent = `${estado.lambda} pts`;
+    $('v-max-seguidas').textContent = estado.maxSeguidas;
+    $('ayuda-periodo').textContent = retro
+      ? `Análisis retrospectivo: compara con los ${j.real.length} torneos que jugó entre enero y octubre, con los cuadros reales de 2026.`
+      : 'Planificación desde la semana del corte de datos hasta el final de la temporada, con su región y semanas seguidas actuales.';
+    $('ficha').innerHTML = [['Ranking', j.ranking], ['Puntos', fmt0(j.puntos)], ['Edad', fmt1(j.edad)],
+      ['Elo', j.elo], ['Elo polvo', j.elo_polvo], ['Elo cemento', j.elo_cemento]].map(([k, v]) => `<div>${k}<b>${v}</b></div>`).join('');
+
+    const opciones = opcionesDe(j);
+    const cal = optimizar(opciones, estado.maxTorneos, estado.lambda, wIni, wFin, rIni, cIni, estado.maxSeguidas)
+      .sort((a, b) => a.w - b.w);
+    const total = cal.reduce((s, o) => s + o.pts, 0);
+    const polvo = cal.length ? cal.filter((o) => o.t.superficie === 'Polvo de ladrillo').length / cal.length : 0;
+    const real = j.real.map(([w, id, q, pts, sem]) => ({ w, id, qualy: !!q, pts, t: D.torneos[id], r: D.torneos[id].region, semanas: sem || 1 }));
+    const totalReal = real.reduce((s, o) => s + o.pts, 0);
+
+    const kpis = [
+      ['Puntos esperados', fmt0(total), retro ? diferencia(total, totalReal) : `en ${cal.length} torneos`, true],
+      ['Torneos', cal.length, `máximo ${estado.maxTorneos}`],
+      ['Cambios de región', cambiosRegion(cal), retro ? `real: ${cambiosRegion(real)}` : 'viajes largos'],
+      ['En polvo de ladrillo', `${Math.round(polvo * 100)}%`, `${cal.filter((o) => o.t.circuito === 'Challenger').length} Challengers`],
+    ];
+    $('kpis').innerHTML = kpis.map(([k, v, s, d]) => `<div class="kpi${d ? ' destacado' : ''}"><span>${k}</span><b>${v}</b><small>${s}</small></div>`).join('');
+
+    // tira de semanas
+    const n = wFin - wIni;
+    const plantilla = `grid-template-columns: repeat(${n}, 1fr)`;
+    const tira = (calendario) => {
+      const celdas = Array.from({ length: n }, () => '<div class="celda"></div>');
+      calendario.forEach((o) => {
+        for (let k = 0; k < (o.semanas || 1); k++) {
+          const i = o.w - wIni + k; if (i < 0 || i >= n) continue;
+          celdas[i] = `<div class="celda ocupada" style="background:${REG_COLOR[o.r]}" title="${fecha(D.semanas[o.w])} · ${o.t.ciudad} (${o.t.pais}) · ${CATEGORIAS[o.t.categoria] || o.t.categoria} · ${fmt1(o.pts)} pts"></div>`;
+        }
+      });
+      return `<div class="tira" style="${plantilla}">${celdas.join('')}</div>`;
+    };
+    const etiquetas = Array.from({ length: n }, (_, i) => {
+      const iso = D.semanas[wIni + i], [a, m, d] = iso.split('-').map(Number);
+      return `<span>${d <= 7 || i === 0 ? MESES[m - 1] : ''}</span>`;
+    }).join('');
+    let html = `<div class="fila-tira"><span>Recomendado</span>${tira(cal)}</div>`;
+    if (retro) html += `<div class="fila-tira"><span>Jugado</span>${tira(real)}</div>`;
+    html += `<div class="fila-tira"><span></span><div class="tira-etiquetas" style="${plantilla}">${etiquetas}</div></div>`;
+    $('tiras').innerHTML = html;
+
+    $('tabla').innerHTML = cal.length ? filasTabla(cal) : '<tr><td class="vacio">No hay torneos elegibles con estos filtros.</td></tr>';
+    $('panel-real').hidden = !retro;
+    if (retro) $('tabla-real').innerHTML = filasTabla(real.sort((a, b) => a.w - b.w));
+  }
+
+  function diferencia(a, b) {
+    const d = a - b, pct = b ? d / b : 0, cls = d >= 0 ? 'positivo' : 'negativo';
+    return `<span class="${cls}">${d >= 0 ? '+' : '−'}${fmt0(Math.abs(d))} (${d >= 0 ? '+' : '−'}${Math.round(Math.abs(pct) * 100)}%)</span> vs. jugado`;
+  }
+
+  function filasTabla(cal) {
+    const cab = '<thead><tr><th>Semana</th><th>Torneo</th><th>Categoría</th><th>Superficie</th><th>Ingreso</th><th class="num">Puntos esperados</th></tr></thead>';
+    const filas = cal.map((o) => `<tr>
+      <td>${fecha(D.semanas[o.w])}</td>
+      <td><span class="punto" style="background:${REG_COLOR[o.r]}"></span>${o.t.ciudad} (${o.t.pais})<span class="sub">${o.t.nombre}</span></td>
+      <td>${CATEGORIAS[o.t.categoria] || o.t.categoria}</td>
+      <td>${o.t.superficie}</td>
+      <td><span class="etiqueta${o.qualy ? ' qualy' : ''}">${o.qualy ? 'Qualy' : 'Cuadro principal'}</span></td>
+      <td class="num">${fmt1(o.pts)}</td></tr>`).join('');
+    const total = cal.reduce((s, o) => s + o.pts, 0);
+    return `${cab}<tbody>${filas}<tr><td colspan="5"><b>Total</b></td><td class="num"><b>${fmt1(total)}</b></td></tr></tbody>`;
+  }
+
+  iniciar();
+})();
+</script>
+</body>
+</html>
